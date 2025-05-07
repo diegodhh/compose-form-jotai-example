@@ -1,5 +1,4 @@
 /** @format */
-
 import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
 import { createFormAtom, useFormAtom } from "compose-form-jotai";
 import { atom } from "jotai";
@@ -7,7 +6,6 @@ import "./App.css";
 import reactLogo from "./assets/react.svg";
 import FormInput from "./components/FormInput";
 import viteLogo from "/vite.svg";
-
 // Define the form data structure
 interface UserFormData {
   name: string;
@@ -39,15 +37,17 @@ class UserFormValidator {
 // Create a form atom with the initial data
 const userFormAtom = createFormAtom<UserFormData>({
   handleSubmitAtom: atom(() => async (data) => {
-    const formData = data;
-    console.log("Form submitted:", formData);
+    console.log("Form submitted with data:", data);
+    // Simulate API call with a delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // You could perform validation or send data to a server here
   }),
   initialValues: initialFormData,
   ValidatorC: UserFormValidator,
 });
 
 function App() {
-  const { formData, actions, register } = useFormAtom(userFormAtom);
+  const { actions, register, formData } = useFormAtom(userFormAtom);
 
   return (
     <>
@@ -62,29 +62,19 @@ function App() {
       <h1>User Form Example</h1>
       <div className="card">
         <form onSubmit={actions.onSubmit}>
-          <div className="form-group">
-            <FormInput
-              id="name"
-              type="text"
-              label="Name:"
-              {...register("name")}
-            />
-            {formData.errorsTouched?.name && (
-              <div className="error">{formData.errorsTouched.name}</div>
-            )}
-          </div>
+          <FormInput
+            {...register("name")}
+            id="name"
+            type="text"
+            label="Name:"
+          />
 
-          <div className="form-group">
-            <FormInput
-              id="email"
-              type="email"
-              label="Email:"
-              {...register("email")}
-            />
-            {formData.errorsTouched?.email && (
-              <div className="error">{formData.errorsTouched.email}</div>
-            )}
-          </div>
+          <FormInput
+            id="email"
+            type="email"
+            label="Email:"
+            {...register("email")}
+          />
 
           <div className="form-group">
             <FormInput
@@ -93,17 +83,29 @@ function App() {
               label="Age:"
               {...register("age")}
             />
-            {formData.errorsTouched?.age && (
-              <div className="error">{formData.errorsTouched.age}</div>
-            )}
           </div>
 
-          <button type="submit">Submit</button>
+          <button type="submit">
+            {formData.isSubmiting ? (
+              <span className="spinner">Loading...</span>
+            ) : (
+              "Submit"
+            )}
+          </button>
+          {formData.hasSubmitted &&
+            !formData.isSubmiting &&
+            Object.keys(formData.errors || {}).length === 0 && (
+              <div className="submission-status">
+                <p>Form has been submitted successfully!</p>
+              </div>
+            )}
         </form>
 
         <div className="form-data">
           <h3>Form State:</h3>
-          <pre>{JSON.stringify(formData, null, 2)}</pre>
+          <pre style={{ color: "#ffffff", backgroundColor: "#333333" }}>
+            {JSON.stringify(formData, null, 2)}
+          </pre>
         </div>
       </div>
       <p className="read-the-docs">

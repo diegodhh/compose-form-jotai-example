@@ -5,7 +5,7 @@ import React from "react";
 interface FormInputProps {
   id?: string;
   name: string | number;
-  value?: string | Record<string, unknown>;
+  value: string | number | Record<string, unknown>;
   type?: string;
   label?: string;
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -20,7 +20,7 @@ interface FormInputProps {
 const FormInput: React.FC<FormInputProps> = ({
   id,
   name,
-  value = "",
+  value,
   type = "text",
   label,
   onChange,
@@ -36,7 +36,7 @@ const FormInput: React.FC<FormInputProps> = ({
       <input
         id={id || String(name)}
         name={String(name)}
-        value={typeof value === "string" ? value : ""}
+        value={value === null || value === undefined ? "" : String(value)}
         type={type}
         onChange={onChange}
         onBlur={(e) => onBlur(e)}
