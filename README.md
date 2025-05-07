@@ -1,54 +1,119 @@
-# React + TypeScript + Vite
+<!-- @format -->
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# compose-form-jotai Example
 
-Currently, two official plugins are available:
+A React + TypeScript + Vite example showing how to use the compose-form-jotai library for form management.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## About compose-form-jotai
 
-## Expanding the ESLint configuration
+`compose-form-jotai` is a form management library built on top of [Jotai](https://jotai.org/) that lets you create type-safe, modular form state through composition.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Key features:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+- **Type-safe**: Form values, errors, and actions are fully typed
+- **Validation Support**: Built-in integration with class-validator
+- **React Integration**: Easy to use with React components
+
+## Usage Guide
+
+### 1. Installation
+
+```bash
+npm install compose-form-jotai class-validator
+# or
+yarn add compose-form-jotai class-validator
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Define your form data structure
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```tsx
+// Define the form data structure
+interface UserFormData {
+  name: string;
+  email: string;
+  age: number;
+}
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+// Create the initial form state
+const initialFormData: UserFormData = {
+  name: "",
+  email: "",
+  age: 0,
+};
+```
+
+### 3. Create a validator class
+
+Use class-validator decorators to define validation rules:
+
+```tsx
+import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
+
+class UserFormValidator {
+  @IsString()
+  @MinLength(2)
+  name!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @MaxLength(2)
+  age!: number;
+}
+```
+
+### 4. Create a form atom
+
+```tsx
+import { createFormAtom } from "compose-form-jotai";
+import { atom } from "jotai";
+
+const userFormAtom = createFormAtom<UserFormData>({
+  handleSubmitAtom: atom(() => async (data) => {
+    console.log("Form submitted with data:", data);
+    // Simulate API call with a delay
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // You could perform validation or send data to a server here
+  }),
+  initialValues: initialFormData,
+  ValidatorC: UserFormValidator,
+});
+```
+
+### 5. Use the form atom in your components
+
+```tsx
+import { useFormAtom } from "compose-form-jotai";
+
+function UserForm() {
+  const { actions, register, formData } = useFormAtom(userFormAtom);
+
+  return (
+    <form onSubmit={actions.onSubmit}>
+      <FormInput {...register("name")} id="name" type="text" label="Name:" />
+
+      <FormInput
+        id="email"
+        type="email"
+        label="Email:"
+        {...register("email")}
+      />
+
+      <FormInput id="age" type="number" label="Age:" {...register("age")} />
+
+      <button type="submit">
+        {formData.isSubmiting ? "Loading..." : "Submit"}
+      </button>
+
+      {formData.hasSubmitted &&
+        !formData.isSubmiting &&
+        Object.keys(formData.errors || {}).length === 0 && (
+          <div className="submission-status">
+            <p>Form has been submitted successfully!</p>
+          </div>
+        )}
+    </form>
+  );
+}
 ```
