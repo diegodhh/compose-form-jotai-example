@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "class-validator": "^0.14.2",
-    "compose-form-jotai": "0.0.1",
+    "compose-form-jotai": "0.1.1",
     "jotai": "^2.12.4",
     "jotai-composer": "^3.0.2",
     "react": "^19.1.0",

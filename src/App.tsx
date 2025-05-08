@@ -1,7 +1,6 @@
 /** @format */
 import { IsEmail, IsString, MaxLength, MinLength } from "class-validator";
 import { createFormAtom, useFormAtom } from "compose-form-jotai";
-import { atom } from "jotai";
 import "./App.css";
 import reactLogo from "./assets/react.svg";
 import FormInput from "./components/FormInput";
@@ -36,12 +35,12 @@ class UserFormValidator {
 
 // Create a form atom with the initial data
 const userFormAtom = createFormAtom<UserFormData>({
-  handleSubmitAtom: atom(() => async (data) => {
+  handleSubmit: async (data) => {
     console.log("Form submitted with data:", data);
     // Simulate API call with a delay
     await new Promise((resolve) => setTimeout(resolve, 1000));
     // You could perform validation or send data to a server here
-  }),
+  },
   initialValues: initialFormData,
   ValidatorC: UserFormValidator,
 });
